@@ -14,54 +14,55 @@ namespace SecurityLibrary
         public List<int> Analyse(List<int> plainText, List<int> cipherText)
         {
             //throw new NotImplementedException();
-            List<int> key = new List<int>(4);
-            int col = (int)(Math.Ceiling(plainText.Count / 2.0));
-            int[,] pt = new int[2, col];
-            int[,] ct = new int[2, col];
-            int count = 0;
-            for (int i = 0; i < 2; i++)
-            {
-                for (int j = 0; j < col; j++)
-                {
-                    pt[i, j] = plainText[count];
-                    ct[i, j] = cipherText[count++];
-                }
-            }
-            count = 0;
-            key.Add(0); key.Add(0); key.Add(0); key.Add(0);
-            for (int i = 0; i < col - 1; i++)
-            {
-                List<double> temp = new List<double>(4);
-                temp.Clear();
-                double x = 1 / (((double)pt[0, i] * (double)pt[1, i + 1]) - ((double)pt[0, i + 1] * (double)pt[1, i]));
-                //temp[0] = x * (double)pt[1, i + 1];
-                //temp[1] = x * -1.0 * (double)pt[0, i + 1];
-                //temp[2] = x * -1.0 * (double)pt[1, i];
-                //temp[3] = x * (double)pt[0, i];
-                temp.Add(x * (double)pt[1, i + 1]);
-                temp.Add(x * -1.0 * (double)pt[0, i + 1]);
-                temp.Add(x * -1.0 * (double)pt[1, i]);
-                temp.Add(x * (double)pt[0, i]);
-                if (Math.Ceiling(temp[0]) != temp[0] ||
-                    Math.Ceiling(temp[1]) != temp[1] ||
-                    Math.Ceiling(temp[2]) != temp[2] ||
-                    Math.Ceiling(temp[3]) != temp[3])
-                    continue;
-                for(int j = 0; j < col - 1; j++)
-                {
-                    key[0] = (((int)temp[0] * ct[0, j]) + ((int)temp[1] * ct[1, j])) % 26;
-                    key[1] = (((int)temp[0] * ct[0, j + 1]) + ((int)temp[1] * ct[1, j + 1])) % 26;
-                    key[2] = (((int)temp[2] * ct[0, j]) + ((int)temp[3] * ct[1, j])) % 26;
-                    key[3] = (((int)temp[2] * ct[0, j + 1]) + ((int)temp[3] * ct[1, j + 1])) % 26;
-                    List<int> temp2 = Encrypt(plainText, key);
-                    if (temp.Equals(cipherText))
-                    {
-                        return key;
-                    }
-                }
+            #region
+            //List<int> key = new List<int>(4);
+            //int col = (int)(Math.Ceiling(plainText.Count / 2.0));
+            //int[,] pt = new int[2, col];
+            //int[,] ct = new int[2, col];
+            //int count = 0;
+            //for (int i = 0; i < 2; i++)
+            //{
+            //    for (int j = 0; j < col; j++)
+            //    {
+            //        pt[i, j] = plainText[count];
+            //        ct[i, j] = cipherText[count++];
+            //    }
+            //}
+            //count = 0;
+            //key.Add(0); key.Add(0); key.Add(0); key.Add(0);
+            //for (int i = 0; i < col - 1; i++)
+            //{
+            //    List<double> temp = new List<double>(4);
+            //    temp.Clear();
+            //    double x = 1 / (((double)pt[0, i] * (double)pt[1, i + 1]) - ((double)pt[0, i + 1] * (double)pt[1, i]));
+            //    //temp[0] = x * (double)pt[1, i + 1];
+            //    //temp[1] = x * -1.0 * (double)pt[0, i + 1];
+            //    //temp[2] = x * -1.0 * (double)pt[1, i];
+            //    //temp[3] = x * (double)pt[0, i];
+            //    temp.Add(x * (double)pt[1, i + 1]);
+            //    temp.Add(x * -1.0 * (double)pt[0, i + 1]);
+            //    temp.Add(x * -1.0 * (double)pt[1, i]);
+            //    temp.Add(x * (double)pt[0, i]);
+            //    if (Math.Ceiling(temp[0]) != temp[0] ||
+            //        Math.Ceiling(temp[1]) != temp[1] ||
+            //        Math.Ceiling(temp[2]) != temp[2] ||
+            //        Math.Ceiling(temp[3]) != temp[3])
+            //        continue;
+            //    for(int j = 0; j < col - 1; j++)
+            //    {
+            //        key[0] = (((int)temp[0] * ct[0, j]) + ((int)temp[1] * ct[1, j])) % 26;
+            //        key[1] = (((int)temp[0] * ct[0, j + 1]) + ((int)temp[1] * ct[1, j + 1])) % 26;
+            //        key[2] = (((int)temp[2] * ct[0, j]) + ((int)temp[3] * ct[1, j])) % 26;
+            //        key[3] = (((int)temp[2] * ct[0, j + 1]) + ((int)temp[3] * ct[1, j + 1])) % 26;
+            //        List<int> temp2 = Encrypt(plainText, key);
+            //        if (temp.Equals(cipherText))
+            //        {
+            //            return key;
+            //        }
+            //    }
 
 
-            }
+            //}
 
 
             //count = 0;
@@ -80,10 +81,156 @@ namespace SecurityLibrary
             //        }
             //    }
             //}
+            #endregion
+            int col = (int)(Math.Ceiling(plainText.Count / 2.0));
+            int[,] pt = new int[ 2,col];
+            int[,] ct = new int[ 2,col];
+            for (int i = 0; i < 2; i++)//bros l plaintext
+            {
+                for (int j = 0, k = 0; j < col; j++, k += 2)
+                {
+                    if (j == 0)
+                    {
+                        pt[i, j] = plainText[i];
+                        ct[i, j] = cipherText[i];
+                    }
+                    else
+                    {
+                        ct[i, j] = cipherText[i + k];
+                        pt[i, j] = plainText[i + k];
+                    }
+                }
+            }
+            List<KeyValuePair<int, int>> allPerm = getAllPerm(col);
+            List<int> As = new List<int>();
+            List<int> Bs = new List<int>();
+            List<int> finalAns = new List<int>();
+            List<int> Ts = new List<int>();
+            As.Add(0); As.Add(0); As.Add(0); Bs.Add(0); Bs.Add(0); Bs.Add(0);
+            finalAns.Add(0); finalAns.Add(0); finalAns.Add(0); finalAns.Add(0);
+            Ts.Add(0); Ts.Add(0); Ts.Add(0);
+            for (int i = 0; i < allPerm.Count; i++)
+            {
+                bool inverseFound = false;
+                int[,] tempPT = new int[2, 2];
+                int[,] tempCT = new int[2, 2];
+                tempPT[0, 0] = pt[0, allPerm[i].Key];
+                tempPT[1, 0] = pt[1, allPerm[i].Key];
+                tempPT[0, 1] = pt[0, allPerm[i].Value];
+                tempPT[1, 1] = pt[1, allPerm[i].Value];
+                tempCT[0, 0] = ct[0, allPerm[i].Key];
+                tempCT[1, 0] = ct[1, allPerm[i].Key];
+                tempCT[0, 1] = ct[0, allPerm[i].Value];
+                tempCT[1, 1] = ct[1, allPerm[i].Value];
+                int b = ((tempPT[0, 0] * tempPT[1, 1]) - (tempPT[1, 0] * tempPT[0, 1])) % 26;
+                if (b < 0)
+                    b += 26;
+                int modInv = 0;
+                #region  Extended Euclidean Algorithm
+                As[0] = 1; As[1] = 0; As[2] = 26;
+                Bs[0] = 0; Bs[1] = 1; Bs[2] = b;
+                while (true)
+                {
+                    if (Bs[2] == 0)
+                    {
+                        inverseFound = false;
+                        break;
+                    }
+                    else if(Bs[2] == 1)
+                    {
+                        inverseFound = true;
+                        modInv = Bs[1];
+                        break;
+                    }
+                    int q = As[2] / Bs[2];
+                    Ts[0] = As[0] - (q * Bs[0]); Ts[1] = As[1] - (q * Bs[1]); Ts[2] = As[2] - (q * Bs[2]);
+                    As[0] = Bs[0]; As[1] = Bs[1]; As[2] = Bs[2];
+                    Bs[0] = Ts[0]; Bs[1] = Ts[1]; Bs[2] = Ts[2];
+                }
+                #endregion
+                if (!inverseFound)
+                    continue;
+                else
+                {
+                    int[,] tempInvPT = new int[2, 2];
+                    tempInvPT[0, 0] = (tempPT[1, 1] * modInv) % 26;
+                    if (tempInvPT[0, 0] < 0)
+                        tempInvPT[0, 0] += 26;
+                    tempInvPT[0, 1] = (-1 * tempPT[0, 1] * modInv) % 26;
+                    if (tempInvPT[0, 1] < 0)
+                        tempInvPT[0, 1] += 26;
+                    tempInvPT[1, 0] = (-1 * tempPT[1, 0] * modInv) % 26;
+                    if (tempInvPT[1, 0] < 0)
+                        tempInvPT[1, 0] += 26;
+                    tempInvPT[1, 1] = (tempPT[0, 0] * modInv) % 26;
+                    if (tempInvPT[1, 1] < 0)
+                        tempInvPT[1, 1] += 26;
+                    int[,] tempKey = new int[2, 2];
+                    for (int m = 0; m < 2; m++)
+                    {
+                        for (int n = 0; n < 2; n++)
+                        {
+                            tempKey[m, n] = 0;
+                            for (int k = 0; k < 2; k++)
+                                tempKey[m, n] += tempCT[m, k] * tempInvPT[k, n];
+                            tempKey[m, n] %= 26;
+                        }
+                    }
+                    int[,] finalCT = new int[2, col];
+                    for (int m = 0; m < 2; m++)
+                    {
+                        for (int n = 0; n < col; n++)
+                        {
+                            finalCT[m, n] = 0;
+                            for (int k = 0; k < 2; k++)
+                                finalCT[m, n] += tempKey[m, k] * pt[k, n];
+                            finalCT[m, n] %= 26;
+                        }
+                    }
+                    bool found = true;
+                    for (int m = 0; m < 2; m++)
+                    {
+                        for (int n = 0; n < col; n++)
+                            if (finalCT[m, n] != ct[m, n])
+                            {
+                                found = false;
+                                break;
+                            }
+                        if (!found)
+                            break;
+                    }
+                    if (!found)
+                        continue;
+                    int min1 = (tempKey[0, 0] < tempKey[0, 1]) ? tempKey[0, 0] : tempKey[0, 1];
+                    int min2 = (tempKey[1, 0] < tempKey[1, 1]) ? tempKey[1, 0] : tempKey[1, 1];
+                    int min = (min1 < min2) ? min1 : min2;
+                    for (int m = 1; m<=min; m++)
+                    {
+                        if (tempKey[0, 0] % m == 0 && tempKey[0, 1] % m == 0 && tempKey[1, 0] % m == 0 && tempKey[1, 1] % m == 0)
+                        {
+                            tempKey[0, 0] /= m;
+                            tempKey[1, 0] /= m;
+                            tempKey[0, 1] /= m;
+                            tempKey[1, 1] /= m;
+                        }
+                    }
+                    finalAns[0] = tempKey[0, 0]; finalAns[1] = tempKey[0, 1]; finalAns[2] = tempKey[1, 0]; finalAns[3] = tempKey[1, 1];
+                    return finalAns;
+                }
+
+            }
 
             throw new InvalidAnlysisException();
         }
 
+        private List<KeyValuePair<int, int>> getAllPerm(int col)
+        {
+            List<KeyValuePair<int, int>> temp = new List<KeyValuePair<int, int>>();
+            for (int i = 0; i < col - 1; i++)
+                for (int j = i + 1; j < col; j++)
+                    temp.Add(new KeyValuePair<int, int>(i, j));
+            return temp;
+        }
 
         public List<int> Decrypt(List<int> cipherText, List<int> key)
         {
