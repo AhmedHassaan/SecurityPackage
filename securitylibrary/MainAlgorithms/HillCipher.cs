@@ -97,7 +97,7 @@ namespace SecurityLibrary
                         }
                     }
                     int[,] finalCT = new int[2, col];
-                    for (int m = 0; m < 2; m++)
+                    for (   int m = 0; m < 2; m++)
                     {
                         for (int n = 0; n < col; n++)
                         {

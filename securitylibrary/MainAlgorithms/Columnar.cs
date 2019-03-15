@@ -8,43 +8,50 @@ namespace SecurityLibrary
 {
     public class Columnar : ICryptographicTechnique<string, List<int>>
     {
-        List<int> finalKey;
-        bool finish = false;
         public List<int> Analyse(string plainText, string cipherText)
         {
             //throw new NotImplementedException();
-            finalKey = new List<int>();
+            List<List<int>> finalKey = new List<List<int>>();
             List<int> key = new List<int>();
             plainText = plainText.ToLower();
             cipherText = cipherText.ToLower();
-            for (int i = 1; i < plainText.Length; i++)
+            cipherText = cipherText.Replace("\0", "");
+            bool finish = false;
+            key.Add(1);
+            //key.Add(2); key.Add(3); key.Add(4); key.Add(5); key.Add(6);
+            for (int i = 2; i < plainText.Length; i++)
             {
                 key.Add(i);
-                getPermutation(key.ToArray(), 0, key.Count - 1, plainText, cipherText);
-                if (finish)
+                getPermutation(key.ToArray(), 0, key.Count - 1, plainText, cipherText,ref finalKey);
+                for(int n = 0; n < finalKey.Count; n++)
                 {
-                    key = finalKey;
-                    break;
+                    string t;
+                    t = Encrypt(plainText, finalKey[n]);
+                    t = t.Replace("\0", "");
+                    if (t.Equals(cipherText))
+                    {
+                        key = finalKey[n];
+                        finish = true;
+                        break;
+                    }
                 }
+                if (finish)
+                    break;
+                finalKey.Clear();
             }
             return key;
         }
-        public void getPermutation(int[] list, int start, int end, string plainText, string cipherText)
+        public void getPermutation(int[] list, int start, int end, string plainText, string cipherText,ref List<List<int>> finalList)
         {
-            for (int i = start; i <= end; i++)
-            {
-                int temp = list[start]; list[start] = list[i]; list[i] = temp;
-                getPermutation(list, start + 1, end, plainText, cipherText);
-                temp = list[start]; list[start] = list[i]; list[i] = temp;
-            }
-
-            string t = Encrypt(plainText, list.ToList());
-            t = t.Replace("\0", "");
-            cipherText = cipherText.Replace("\0", "");
-            if (t.Equals(cipherText))
-            {
-                finalKey = list.ToList();
-                finish = true;
+            if (start == end)
+                finalList.Add(list.ToList());
+            else {
+                for (int i = start; i <= end; i++)
+                {
+                    int temp = list[start]; list[start] = list[i]; list[i] = temp;
+                    getPermutation(list, start + 1, end, plainText, cipherText, ref finalList);
+                    temp = list[start]; list[start] = list[i]; list[i] = temp;
+                }
             }
         }
 
