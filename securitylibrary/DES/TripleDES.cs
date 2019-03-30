@@ -42,6 +42,8 @@ namespace SecurityLibrary.DES
 
             key = key.Remove(0, 2);
             plainText = plainText.Remove(0, 2);
+            while (key.Length < 16)
+                key += "0";
             #region generating the bitArray
             byte[] keyTemp = StringToByteArray(key);
             byte[] plainTextTemp = StringToByteArray(plainText);
@@ -278,6 +280,8 @@ namespace SecurityLibrary.DES
             cipherText = cipherText.ToLower();
             key = key.Remove(0, 2);
             cipherText = cipherText.Remove(0, 2);
+            while (key.Length < 16)
+                key += "0";
             #region generating the bitArray
             byte[] keyTemp = StringToByteArray(key);
             byte[] cipherTextTemp = StringToByteArray(cipherText);
