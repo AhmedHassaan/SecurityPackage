@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Collections;
 
 namespace SecurityLibrary.AES
 {
@@ -26,7 +27,7 @@ namespace SecurityLibrary.AES
             plainText = plainText.ToLower();
             string[,] mixColumnsMatrix = new string[4, 4];
             List<string[,]> keys = new List<string[,]>();
-            #region Key Generator
+            #region Key Generator //Correct\\
             string keyTemp = key;
             string[,] keyMatrix = new string[4, 4];
             string[,] plainMatrix = new string[4, 4];
@@ -40,6 +41,7 @@ namespace SecurityLibrary.AES
                     plainMatrix[j, i] = plainText[countPlain++].ToString() + plainText[countPlain++].ToString();
                 }
             }
+
             #region RCON
             string[,] RCON = new string[4, 10] { {"01", "02", "04", "08", "10", "20", "40", "80", "1b", "36" } ,
                                                  {"00","00","00","00","00","00","00","00","00","00", },
@@ -57,7 +59,7 @@ namespace SecurityLibrary.AES
             sbox.Add("20", "b7"); sbox.Add("21", "fd"); sbox.Add("22", "93"); sbox.Add("23", "26"); sbox.Add("24", "36");
             sbox.Add("25", "3f"); sbox.Add("26", "f7"); sbox.Add("27", "cc"); sbox.Add("28", "34"); sbox.Add("29", "a5");
             sbox.Add("2a", "e5"); sbox.Add("2b", "f1"); sbox.Add("2c", "71"); sbox.Add("2d", "d8"); sbox.Add("2e", "31"); sbox.Add("2f", "15");
-            sbox.Add("30", "64"); sbox.Add("31", "c7"); sbox.Add("32", "23"); sbox.Add("33", "c3"); sbox.Add("34", "18"); sbox.Add("35", "96");
+            sbox.Add("30", "04"); sbox.Add("31", "c7"); sbox.Add("32", "23"); sbox.Add("33", "c3"); sbox.Add("34", "18"); sbox.Add("35", "96");
             sbox.Add("36", "05"); sbox.Add("37", "9a"); sbox.Add("38", "07"); sbox.Add("39", "12"); sbox.Add("3a", "80");
             sbox.Add("3b", "e2"); sbox.Add("3c", "eb"); sbox.Add("3d", "27"); sbox.Add("3e", "b2"); sbox.Add("3f", "75");
             sbox.Add("40", "09"); sbox.Add("41", "83"); sbox.Add("42", "2c"); sbox.Add("43", "1a"); sbox.Add("44", "1b");
@@ -143,7 +145,7 @@ namespace SecurityLibrary.AES
             #region Initial round (Add Round Key)
             for (int i = 0; i < 4; i++)
             {
-                for(int j = 0; j < 0; j++)
+                for(int j = 0; j < 4; j++)
                 {
                     int num1 = Convert.ToInt32(plainMatrix[j, i], 16);
                     int num2 = Convert.ToInt32(keyMatrix[j, i], 16);
@@ -161,11 +163,11 @@ namespace SecurityLibrary.AES
             mixColumnsMatrix[0, 3] = "01";
             for(int i = 1; i < 4; i++)
             {
-                string t = mixColumnsMatrix[i, 0];
-                mixColumnsMatrix[i, 0] = mixColumnsMatrix[i, 1];
-                mixColumnsMatrix[i, 1] = mixColumnsMatrix[i, 2];
-                mixColumnsMatrix[i, 2] = mixColumnsMatrix[i, 3];
-                mixColumnsMatrix[i, 3] = t;
+                string t = mixColumnsMatrix[i - 1, 3];
+                mixColumnsMatrix[i, 1] = mixColumnsMatrix[i - 1, 0];
+                mixColumnsMatrix[i, 2] = mixColumnsMatrix[i - 1, 1];
+                mixColumnsMatrix[i, 3] = mixColumnsMatrix[i - 1, 2];
+                mixColumnsMatrix[i, 0] = t;
             }
             #endregion
             #region Main rounds (9)
@@ -179,7 +181,7 @@ namespace SecurityLibrary.AES
                 #region 2- ShiftRows
                 for (int a = 1; a < 4; a++)
                 {
-                    for (int b = 0; b <= a; b++)
+                    for (int b = 0; b < a; b++)
                     {
                         string t = plainMatrix[a, 0];
                         plainMatrix[a, 0] = plainMatrix[a, 1];
@@ -190,10 +192,57 @@ namespace SecurityLibrary.AES
                 }
                 #endregion
                 #region 3- Mix Columns
-
-                for(int a = 0; a < 4; a++)
+                List<BitArray> binaries = new List<BitArray>();
+                string[,] tempPlain = new string[4, 1];
+                for(int k = 0; k < 4; k++)
                 {
-
+                    for (int a = 0; a < 4; a++)
+                    {
+                        for (int b = 0; b < 4; b++)
+                        {
+                            if (mixColumnsMatrix[a, b] == "02")
+                            {
+                                BitArray binary = getBinary(plainMatrix[b, k]);
+                                bool firstBit = binary[0];
+                                for (int z = 0; z < 7; z++)
+                                    binary[z] = binary[z + 1];
+                                binary[7] = false;
+                                if (firstBit)
+                                {
+                                    BitArray binary2 = getBinary("1b");
+                                    binary = binary.Xor(binary2);
+                                }
+                                binaries.Add(binary);
+                            }
+                            else if (mixColumnsMatrix[a, b] == "03")
+                            {
+                                BitArray binary = getBinary(plainMatrix[b, k]);
+                                bool firstBit = binary[0];
+                                for (int z = 0; z < 7; z++)
+                                    binary[z] = binary[z + 1];
+                                binary[7] = false;
+                                if (firstBit)
+                                {
+                                    BitArray binary2 = getBinary("1b");
+                                    binary = binary.Xor(binary2);
+                                }
+                                BitArray temp = getBinary(plainMatrix[b, k]);
+                                binary = binary.Xor(temp);
+                                binaries.Add(binary);
+                            }
+                            else
+                            {
+                                BitArray binary = getBinary(plainMatrix[b, k]);
+                                binaries.Add(binary);
+                            }
+                        }
+                        for (int z = 1; z < 4; z++)
+                            binaries[z] = binaries[z - 1].Xor(binaries[z]);
+                        tempPlain[a, 0] = getHex(binaries[3]);
+                            binaries = new List<BitArray>();
+                    }
+                    for (int p = 0; p < 4; p++)
+                        plainMatrix[p, k] = tempPlain[p, 0];
                 }
                 #endregion
                 #region 4- Add Round Key
@@ -221,7 +270,7 @@ namespace SecurityLibrary.AES
             #region 2- ShiftRows
             for (int a = 1; a < 4; a++)
             {
-                for (int b = 0; b <= a; b++)
+                for (int b = 0; b < a; b++)
                 {
                     string t = plainMatrix[a, 0];
                     plainMatrix[a, 0] = plainMatrix[a, 1];
@@ -254,6 +303,57 @@ namespace SecurityLibrary.AES
                     cipher += plainMatrix[j, i];
 
             return cipher;
+        }
+        private BitArray getBinary(string hex)
+        {
+            //string binary = "";
+            Byte[] bytes = Enumerable.Range(0, hex.Length)
+                         .Where(x => x % 2 == 0)
+                         .Select(x => Convert.ToByte(hex.Substring(x, 2), 16))
+                         .ToArray();
+            BitArray bitArray = new BitArray(bytes);
+            for(int i = 0; i < bitArray.Length/2; i++)
+            {
+                bool t = bitArray[i];
+                bitArray[i] = bitArray[bitArray.Length - 1 - i];
+                bitArray[bitArray.Length - 1 - i] = t;
+            }
+            //for (int i = 0; i < 8; i++)
+            //    binary += bitArray[bitArray.Length - i - 1] ? "1" : "0";
+            return bitArray;
+        }
+        private string getHex(BitArray bits)
+        {
+            string hex = "";
+            for (int i = 0; i < bits.Length / 2; i++)
+            {
+                bool t = bits[i];
+                bits[i] = bits[bits.Length - 1 - i];
+                bits[bits.Length - 1 - i] = t;
+            }
+            for(int i = 0; i < 4; i++)
+            {
+                bool t = bits[i];
+                bits[i] = bits[i + 4];
+                bits[i + 4] = t;
+            }
+
+            StringBuilder result = new StringBuilder(18);
+            BitArray tempNew = new BitArray(4);
+            for (int i = 0; i < 2; i++)
+            {
+                tempNew[3] = bits[(i * 4) + 3];
+                tempNew[2] = bits[(i * 4) + 2];
+                tempNew[1] = bits[(i * 4) + 1];
+                tempNew[0] = bits[(i * 4) + 0];
+                byte[] tempByte = new byte[1];
+                tempNew.CopyTo(tempByte, 0);
+                result.AppendFormat("{0:x1}", tempByte[0]);
+            }
+            //hex = result.ToString();
+            //if (hex.Length == 1)
+            //    hex = "0" + hex;
+            return result.ToString();
         }
     }
 }
