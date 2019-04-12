@@ -253,7 +253,6 @@ namespace SecurityLibrary.AES
                 List<BitArray> binaries = new List<BitArray>();
                 string[,] tempPlain = new string[4, 1];
                 BitArray binary;
-                int tempCipher = 0;
                 for (int k = 0; k < 4; k++)
                 {
                     for (int a = 0; a < 4; a++)
